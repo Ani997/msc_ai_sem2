@@ -84,9 +84,8 @@ function d=histogram_intersection(a,b)
   % -------------- write your own code here ---------------
   d = 1;
   
-  for i = 1:p
-      min(a)
-      
+  for i = 1:a
+    d = d - min(b(1,index),c(1,index));      
   end
   % -------------- write your own code here ---------------
 
