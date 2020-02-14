@@ -77,11 +77,17 @@ function d=histogram_intersection(a,b)
   assert(size(a,1) == 1); % a needs to be a single sample
   assert(size(b,1) == 1); % b needs to be a single sample
 	
-  %d=zeros(m,1); % initialize output array
+  d=zeros(m,1); % initialize output array
 
 
   d = 0;  
   % -------------- write your own code here ---------------
+  d = 1;
+  
+  for i = 1:p
+      min(a)
+      
+  end
   % -------------- write your own code here ---------------
 
  end 

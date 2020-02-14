@@ -63,7 +63,7 @@ end
 save('data/global/all_features','TrainMat','TestMat');
 %}
 %-----------------------code to load pre-computed features-----------------
-%{
+%{%
 load('data/global/all_features');
 %}
 %------------------------end of code---------------------------------------
@@ -74,7 +74,7 @@ load('data/global/all_features');
 %if you wanna see the detail of how the dictionary is created, please refer
 %to CalculateDictionary.m which runs step by step. 
 %--------------------------code--------------------------------------------
-%{
+%{%
 clear 
 load('data/global/all_features');
 DictionarySize = 500;
@@ -90,7 +90,7 @@ save('data/global/dictionary','C');
 %% 2.3 Euclidean distance 
 % Assume a and b are two vectors, the  Euclidean distance function is EuclideanDistance.m 
 %--------------------------------------code--------------------------------
-%{
+%{%
 clear;
 load('data/global/all_features');
 load('data/global/dictionary');
@@ -102,7 +102,7 @@ d = EuclideanDistance(a,b);
 
 %% 2.4 Assign each descriptor to the nearest codeword 
 
-%{
+%{%
 clear;
 load('data/global/all_features');
 load('data/global/dictionary');
@@ -115,8 +115,18 @@ d = EuclideanDistance(discrptor_test1,C);
 %-----------------------------Write Your Own Code here that assigns all descriptors -------------
 %-----------------------------Write Your Own Code here that assigns all descriptors -------------
 %-----------------------------Write Your Own Code here that assigns all descriptors -------------
+index_train = zeros(270000,1);
+index_test = zeros(90000,1);
 
+for k=1:270000
+    [minv,index] = min(EuclideanDistance(TrainMat(k,:),C));
+    index_train(k,1) = index;
+end
 
+for k=1:90000
+    [minv,index] = min(EuclideanDistance(TestMat(k,:),C));
+    index_test(k,1) = index;
+end
 
 save('data/global/assignd_discriptor','index_train','index_test');
 %}
@@ -124,10 +134,10 @@ save('data/global/assignd_discriptor','index_train','index_test');
 
 %% 2.5 Visualize some image patches that are assigned to the same codeword 
 %------------------------code------------------------------------------
-%{
+% %{
 clear;
 load('data/global/assignd_iscriptor');
-wordid =78; %397; %37;% set a random value and we intead to find 20 patches from both training and test
+wordid =400; %397; %37;% set a random value and we intead to find 20 patches from both training and test
 n = 30;% number of patches
 close all;
 visualize_patches(index_train,index_test,wordid,n);
@@ -138,10 +148,10 @@ clear;
 %==========================================================================
 %% Step 3 Image representation using bag of words 
 %% 3.1 represent each image using BoW 
-%{
+%{%
 clear;
 BoW =[]; %initialization 
-isshow = 0; % show image and histogram or not
+isshow = 1; % show image and histogram or not
 load('data/global/image_names');
 load('data/global/dictionary','C');
 %load('data/global/all_features');
@@ -151,11 +161,32 @@ for ii = 1:nimages
       image_dir=sprintf('%s/%s/','data/local',num2string(ii,3));                    % location where detector is saved
       inFName = fullfile(image_dir, sprintf('%s', 'sift_features'));
       load(inFName, 'features');
+      d = EuclideanDistance(features.data, C);
+      Row = size(d,1);
+      WordCluster = zeros(1,vocbsize);
+      for i =1:Row
+        [MinimumVal,IndexOfMiniVal] = min(d(i,:));
+        WordCluster(1,IndexOfMiniVal) = WordCluster(1,IndexOfMiniVal)+1;
+      end
+      BoW(ii,:) = do_normalize(WordCluster);
+%       
+%       M = transpose(min(transpose(d)));
+%       for row = 1:size(M)
+%           M(row)
+%       end
       
+%       min
+%       index
+      
+      % for each image there are 900 features 
+      % then you get 900 indices
+      % by counting occurences you construct 500 columns feature vector BoW
+      
+%       1 2 1 3 1 (900) ->   3 1 1(500)
       %------------------------ write your own code here------------------------------------------
       %------------------------ write your own code here------------------------------------------
       
-      
+
       if isshow == 1
         close all; figure;
         subplot(1,2,1),subimage(imread(strcat('image/',image_names{ii})));
