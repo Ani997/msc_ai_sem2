@@ -1,18 +1,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%coursework: face recognition with eigenfaces
+%% coursework: face recognition with eigenfaces
+
 
 % need to replace with your own path
-addpath software;
-
+% addpath software;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Loading of the images: You need to replace the directory 
+
+%% Loading of the images: You need to replace the directory 
+clear;
 Imagestrain = loadImagesInDirectory ( 'images/training-set/23x28/');
 [Imagestest, Identity] = loadTestImagesInDirectory ( 'images/testing-set/23x28/');
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Computation of the mean, the eigenvalues, amd the eigenfaces stored in the
+%% Computation of the mean, the eigenvalues, amd the eigenfaces stored in the
 %facespace:
 ImagestrainSizes = size(Imagestrain);
 Means = floor(mean(Imagestrain));
@@ -26,7 +28,7 @@ Eigenvalues = diag(S);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Display of the mean image:
+%% Display of the mean image:
 MeanImage = uint8 (zeros(28, 23));
 for k = 0:643
    MeanImage( mod (k,28)+1, floor(k/28)+1 ) = Means (1,k+1);
@@ -39,13 +41,27 @@ title('Mean Image');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Display of the 20 first eigenfaces : Write your code here
+%% Display of the 20 first eigenfaces : Write your code here
+
+EigenFace = zeros(1, 644); % create a flat col matrix with 0s
+NoOfEigenFaces = 20;
+EFMatrix = S*V'; % using SVD V compute EF matrix
 
 
+%normalization eigenfaces for better visualisation
+EFMatrix = 255 *(EFMatrix - min(EFMatrix(:))) ./ (max(EFMatrix(:)) - min(EFMatrix(:)));
+
+
+for k = 1:NoOfEigenFaces
+   EigenFace = EFMatrix(k,:);
+   EigenFace = reshape(EigenFace, [28,23]);
+   subplot (4,5,k);
+   imshow(uint8(EigenFace));
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Projection of the two sets of images omto the face space:
+%% Projection of the two sets of images onto the face space:
 Locationstrain=projectImages (Imagestrain, Means, Space);
 Locationstest=projectImages (Imagestest, Means, Space);
 
@@ -74,7 +90,7 @@ end,
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Display of first 6 recognition results, image per image:
+%% Display of first 6 recognition results, image per image:
 figure;
 x=6;
 y=2;
@@ -99,12 +115,25 @@ end,
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%recognition rate compared to the number of test images: Write your code here to compute the recognition rate using top 20 eigenfaces.
+%% recognition rate compared to the number of test images: Write your code here to compute the recognition rate using top 20 eigenfaces.
 
+% RR is for 20 indices of eignefaces.
+% if traon indices are not equal to test Identity the RR = 0
+
+RR = zeros(1,length(Imagestest(:,1)));
+for i = 1: length(Imagestest(:,1))
+    if ceil(Indices(i,1)/5) == Identity(i)
+        RR(i) = 1;
+    else 
+        RR(i) = 0;
+    end
+end
+% The total recognition rate for the whole test set that has 70 images
+TotalRR = sum(RR)/70 *100;
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-%effect of threshold (i.e. number of eigenfaces):   
+%% effect of threshold (i.e. number of eigenfaces):   
 averageRR=zeros(1,20);
 for t=1:40,
   Threshold =t;  
@@ -166,8 +195,35 @@ plot(averageRR(1,:));
 title('Recognition rate against the number of eigenfaces used');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%effect of K: You need to evaluate the effect of K in KNN and plot the recognition rate against K. Use 20 eigenfaces here.
+%% effect of K: You need to evaluate the effect of K in KNN and plot the recognition rate against K. Use 20 eigenfaces here.
 
+train_lab = [];
+for i = 1:40
+    train_lab = horzcat(train_lab, repmat(i,1,5));
+end
+%% 
+% can set the value of K (nearest neighbours)
+K=1:20;
+rec_rate = zeros(1,20);
 
-
-
+% the identity of the test image was found using KNN
+% The obtained identity was evaluated.
+% The recognition rate is calculated
+for k = 1:20
+    knn = fitcknn(Imagestrain, train_lab, 'NumNeighbors', k);
+    knn_prediction = predict(knn, Imagestest);
+    knn_rec_rate = zeros(1, length(Imagestest(:,1)));
+    
+    for i = 1:length(Imagestest(:,1))
+        if ceil(Indices(i,1)/5) == knn_prediction(i)
+            knn_rec_rate(i) = 1;
+        else
+            knn_rec_rate(i) = 0;
+        end
+    end
+    
+    rec_rate(k) = (sum(knn_rec_rate)/70)*100;
+end
+figure
+plot(K, rec_rate);
+xlabel('K'); ylabel('Recognition rate')

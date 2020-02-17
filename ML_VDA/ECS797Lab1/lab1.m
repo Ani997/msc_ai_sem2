@@ -148,7 +148,7 @@ clear;
 %==========================================================================
 %% Step 3 Image representation using bag of words 
 %% 3.1 represent each image using BoW 
-%{%
+%{%055801595160
 clear;
 BoW =[]; %initialization 
 isshow = 1; % show image and histogram or not
