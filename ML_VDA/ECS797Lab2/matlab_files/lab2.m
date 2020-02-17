@@ -203,13 +203,13 @@ for i = 1:40
 end
 %% 
 % can set the value of K (nearest neighbours)
-K=1:20;
-rec_rate = zeros(1,20);
+K=1:200;
+rec_rate = zeros(1,200);
 
 % the identity of the test image was found using KNN
 % The obtained identity was evaluated.
 % The recognition rate is calculated
-for k = 1:20
+for k = 1:200
     knn = fitcknn(Imagestrain, train_lab, 'NumNeighbors', k);
     knn_prediction = predict(knn, Imagestest);
     knn_rec_rate = zeros(1, length(Imagestest(:,1)));
@@ -227,3 +227,65 @@ end
 figure
 plot(K, rec_rate);
 xlabel('K'); ylabel('Recognition rate')
+
+
+%% k
+averageRR=zeros(1,200);
+  Threshold =20;  
+Distances=zeros(TestSizes(1),TrainSizes(1));
+
+for i=1:TestSizes(1),
+    for j=1: TrainSizes(1),
+        Sum=0;
+        for k=1: Threshold,
+   Sum=Sum+((Locationstrain(j,k)-Locationstest(i,k)).^2);
+        end,
+     Distances(i,j)=Sum;
+    end,
+end,
+
+Values=zeros(TestSizes(1),TrainSizes(1));
+Indices=zeros(TestSizes(1),TrainSizes(1));
+for i=1:70,
+[Values(i,:), Indices(i,:)] = sort(Distances(i,:));
+end,
+
+
+person=zeros(70,200);
+person(:,:)=floor((Indices(:,:)-1)/5)+1;
+
+for K=1:200
+recognised_person_=zeros(1,70);
+recognitionrate=0;
+number_per_number=zeros(1,5);
+number_of_occurance=zeros(70,K);
+
+for i=1:70;
+    max=0;
+    for j=1:K,
+        for k=j:K,
+            if (person(i,k)==person(i,j))
+                number_of_occurance(i,j)=number_of_occurance(i,j)+1;
+            end,
+        end,
+        if (number_of_occurance(i,j)>max)
+            max=number_of_occurance(i,j);
+            jmax=j;
+        end,
+    end,
+    recognised_person(1,i)=person(i,jmax);
+  
+ if (Identity(1,i)==recognised_person(1,i))
+     recognitionrate=recognitionrate+1;
+ end,
+
+averageRR(1,K)=recognitionrate/70;
+end,
+end,
+
+figure;
+plot(averageRR(1,:));
+title('Recognition rate against the number of nearest neighbours(threshold=20)');
+
+
+
