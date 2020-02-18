@@ -77,7 +77,7 @@ load('data/global/all_features');
 %{%
 clear 
 load('data/global/all_features');
-DictionarySize = 500;
+DictionarySize = 20;
 run('software/vlfeat-0.9.16/toolbox/vl_setup');% to compile the vlfeat lab. 
 tic
 [C,A] = vl_kmeans(TrainMat',DictionarySize,'algorithm', 'elkan');
@@ -113,19 +113,20 @@ d = EuclideanDistance(discrptor_test1,C);
 [minv,index] = min(d);% index will be the nearest codeword cluster 
 
 %-----------------------------Write Your Own Code here that assigns all descriptors -------------
-index_train = zeros(size(TrainMat,1),1); % initalise with size of training samples
-index_test = zeros(size(TestMat,1),1); % initalise with size of test samples
+%-----------------------------Write Your Own Code here that assigns all descriptors -------------
+%-----------------------------Write Your Own Code here that assigns all descriptors -------------
+index_train = zeros(270000,1);
+index_test = zeros(90000,1);
 
-for k=1:size(TrainMat,1) % iterate over and compute for each training sample
+for k=1:270000 % iterate over and compute for each training sample
     [minv,index] = min(EuclideanDistance(TrainMat(k,:),C)); % compute codeword for each training sample
     index_train(k,1) = index; % store the index only for the nearest code word
 end
 
-for k=1:size(TestMat,1) % iterate over and compute for each test sample
+for k=1:90000 % iterate over and compute for each test sample
     [minv,index] = min(EuclideanDistance(TestMat(k,:),C)); % compute codeword for each test sample
     index_test(k,1) = index;
 end
-%-----------------------------Write Your Own Code here that assigns all descriptors -------------
 
 save('data/global/assignd_discriptor','index_train','index_test');
 %}
@@ -136,7 +137,7 @@ save('data/global/assignd_discriptor','index_train','index_test');
 % %{
 clear;
 load('data/global/assignd_iscriptor');
-wordid =400; %397; %37;% set a random value and we intead to find 20 patches from both training and test
+wordid =2; %397; %37;% set a random value and we intead to find 20 patches from both training and test
 n = 30;% number of patches
 close all;
 visualize_patches(index_train,index_test,wordid,n);
@@ -160,28 +161,36 @@ for ii = 1:nimages
       image_dir=sprintf('%s/%s/','data/local',num2string(ii,3));                    % location where detector is saved
       inFName = fullfile(image_dir, sprintf('%s', 'sift_features'));
       load(inFName, 'features');
-      %------------------------ write your own code here------------------------------------------
-      % for each image there are 900 features 
-      % then we get 900 indices
-      % by counting occurences you construct 500 columns feature vector BoW
-      
-      % 1 2 1 3 1 (900) ->   3 1 1(500)
-      
       d = EuclideanDistance(features.data, C); 
       Row = size(d,1);
       WordCluster = zeros(1,vocbsize);
       for i =1:Row
-        [minv,index] = min(d(i,:));
-        WordCluster(1,index) = WordCluster(1,index)+1;
+        [MinimumVal,IndexOfMiniVal] = min(d(i,:));
+        WordCluster(1,IndexOfMiniVal) = WordCluster(1,IndexOfMiniVal)+1;
       end
       BoW(ii,:) = do_normalize(WordCluster);
-
+%       
+%       M = transpose(min(transpose(d)));
+%       for row = 1:size(M)
+%           M(row)
+%       end
+      
+%       min
+%       index
+      
+      % for each image there are 900 features 
+      % then we get 900 indices
+      % by counting occurences you construct 500 columns feature vector BoW
+      
+%       1 2 1 3 1 (900) ->   3 1 1(500)
+      %------------------------ write your own code here------------------------------------------
       %------------------------ write your own code here------------------------------------------
       
+
       if isshow == 1
         close all; figure;
         subplot(1,2,1),subimage(imread(strcat('image/',image_names{ii})));
-        subplot(1,2,2),bar(BoW(ii,:)),xlim([0 500]);
+        subplot(1,2,2),bar(BoW(ii,:)),xlim([0 20]);
       end 
 end 
 
@@ -274,14 +283,14 @@ prd_label_r = class_names{predict_label(idright)};
 prd_label_w = class_names{predict_label(idwrong)};
 figure, 
 subplot(2,4,1),subimage(imread(strcat('image/',image_names{idright+300}))),title('test image'),axis off;
-subplot(2,4,2),bar(BoW(idright+300,:)),xlim([1,500]),title('BoW of test image');
+subplot(2,4,2),bar(BoW(idright+300,:)),xlim([1,20]),title('BoW of test image');
 subplot(2,4,3),subimage(imread(strcat('image/',image_names{NNresult(idright)}))),title('Right Label NN image'),axis off;
-subplot(2,4,4),bar(BoW(NNresult(idright),:)),xlim([1,500]),title('BoW of NN image');
+subplot(2,4,4),bar(BoW(NNresult(idright),:)),xlim([1,20]),title('BoW of NN image');
 
 subplot(2,4,5),subimage(imread(strcat('image/',image_names{idwrong+300}))),title('test image'),axis off;
-subplot(2,4,6),bar(BoW(idwrong+300,:)),xlim([1,500]),title('BoW of test image');
+subplot(2,4,6),bar(BoW(idwrong+300,:)),xlim([1,20]),title('BoW of test image');
 subplot(2,4,7),subimage(imread(strcat('image/',image_names{NNresult(idwrong)}))),title('Wrong Label NN image'),axis off;
-subplot(2,4,8),bar(BoW(NNresult(idwrong),:)),xlim([1,500]),title('BoW of NN image');
+subplot(2,4,8),bar(BoW(NNresult(idwrong),:)),xlim([1,20]),title('BoW of NN image');
 %}
 %-------------------------------end of code--------------------------------
 %% 4.5 Histogram intersection distance

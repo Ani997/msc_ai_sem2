@@ -14,8 +14,7 @@ Imagestrain = loadImagesInDirectory ( 'images/training-set/23x28/');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Computation of the mean, the eigenvalues, amd the eigenfaces stored in the
-%facespace:
+%% Computation of the mean, the eigenvalues, amd the eigenfaces stored in the facespace:
 ImagestrainSizes = size(Imagestrain);
 Means = floor(mean(Imagestrain));
 CenteredVectors = (Imagestrain - repmat(Means, ImagestrainSizes(1), 1));
@@ -44,7 +43,6 @@ title('Mean Image');
 %% Display of the 20 first eigenfaces : Write your code here
 
 EigenFace = zeros(1, 644); % create a flat col matrix with 0s
-NoOfEigenFaces = 20;
 EFMatrix = S*V'; % using SVD V compute EF matrix
 
 
@@ -52,7 +50,7 @@ EFMatrix = S*V'; % using SVD V compute EF matrix
 EFMatrix = 255 *(EFMatrix - min(EFMatrix(:))) ./ (max(EFMatrix(:)) - min(EFMatrix(:)));
 
 
-for k = 1:NoOfEigenFaces
+for k = 1:20 % iterate over and plot plot 
    EigenFace = EFMatrix(k,:);
    EigenFace = reshape(EigenFace, [28,23]);
    subplot (4,5,k);
@@ -118,9 +116,9 @@ end,
 %% recognition rate compared to the number of test images: Write your code here to compute the recognition rate using top 20 eigenfaces.
 
 % RR is for 20 indices of eignefaces.
-% if traon indices are not equal to test Identity the RR = 0
+% if traon indices are not equal to test Identity then RR = 0
 
-RR = zeros(1,length(Imagestest(:,1)));
+RR = zeros(1,length(Imagestest(:,1))); % RR is recogonition rate is of length of imagetest 
 for i = 1: length(Imagestest(:,1))
     if ceil(Indices(i,1)/5) == Identity(i)
         RR(i) = 1;
@@ -129,7 +127,7 @@ for i = 1: length(Imagestest(:,1))
     end
 end
 % The total recognition rate for the whole test set that has 70 images
-TotalRR = sum(RR)/70 *100;
+NETRR = sum(RR)/70 *100;
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -196,96 +194,34 @@ title('Recognition rate against the number of eigenfaces used');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% effect of K: You need to evaluate the effect of K in KNN and plot the recognition rate against K. Use 20 eigenfaces here.
-
-train_lab = [];
+%KNN evaluation
+TrainingLabels = []; % create training labels 
 for i = 1:40
-    train_lab = horzcat(train_lab, repmat(i,1,5));
+    TrainingLabels = horzcat(TrainingLabels, repmat(i,1,5));
 end
-%% 
-% can set the value of K (nearest neighbours)
-K=1:200;
-rec_rate = zeros(1,200);
+%% Recoginition rate against different k values 
 
-% the identity of the test image was found using KNN
-% The obtained identity was evaluated.
-% The recognition rate is calculated
+NETRR = zeros(1,200);
+K=1:200; % value of k in K nearest neighbour
+
+
 for k = 1:200
-    knn = fitcknn(Imagestrain, train_lab, 'NumNeighbors', k);
-    knn_prediction = predict(knn, Imagestest);
-    knn_rec_rate = zeros(1, length(Imagestest(:,1)));
+    KNNModel = fitcknn(Imagestrain, TrainingLabels, 'NumNeighbors', k,'BreakTies', 'nearest'); %fit knn model to training data
+    KNNPredict = predict(KNNModel, Imagestest); % make pediction on test data
+    KNN_RR = zeros(1, length(Imagestest(:,1))); % initalise recoginition rate 
     
     for i = 1:length(Imagestest(:,1))
-        if ceil(Indices(i,1)/5) == knn_prediction(i)
-            knn_rec_rate(i) = 1;
+        %compare the predictions with identity of test image and predicted
+        if ceil(Indices(i,1)/5) == KNNPredict(i) 
+            KNN_RR(i) = 1;
         else
-            knn_rec_rate(i) = 0;
+            KNN_RR(i) = 0;
         end
     end
     
-    rec_rate(k) = (sum(knn_rec_rate)/70)*100;
+    NETRR(k) = ((sum(KNN_RR)/70)*100);
 end
 figure
-plot(K, rec_rate);
+plot(K, NETRR);
 xlabel('K'); ylabel('Recognition rate')
-
-
-%% k
-averageRR=zeros(1,200);
-  Threshold =20;  
-Distances=zeros(TestSizes(1),TrainSizes(1));
-
-for i=1:TestSizes(1),
-    for j=1: TrainSizes(1),
-        Sum=0;
-        for k=1: Threshold,
-   Sum=Sum+((Locationstrain(j,k)-Locationstest(i,k)).^2);
-        end,
-     Distances(i,j)=Sum;
-    end,
-end,
-
-Values=zeros(TestSizes(1),TrainSizes(1));
-Indices=zeros(TestSizes(1),TrainSizes(1));
-for i=1:70,
-[Values(i,:), Indices(i,:)] = sort(Distances(i,:));
-end,
-
-
-person=zeros(70,200);
-person(:,:)=floor((Indices(:,:)-1)/5)+1;
-
-for K=1:200
-recognised_person_=zeros(1,70);
-recognitionrate=0;
-number_per_number=zeros(1,5);
-number_of_occurance=zeros(70,K);
-
-for i=1:70;
-    max=0;
-    for j=1:K,
-        for k=j:K,
-            if (person(i,k)==person(i,j))
-                number_of_occurance(i,j)=number_of_occurance(i,j)+1;
-            end,
-        end,
-        if (number_of_occurance(i,j)>max)
-            max=number_of_occurance(i,j);
-            jmax=j;
-        end,
-    end,
-    recognised_person(1,i)=person(i,jmax);
-  
- if (Identity(1,i)==recognised_person(1,i))
-     recognitionrate=recognitionrate+1;
- end,
-
-averageRR(1,K)=recognitionrate/70;
-end,
-end,
-
-figure;
-plot(averageRR(1,:));
-title('Recognition rate against the number of nearest neighbours(threshold=20)');
-
-
-
+title('Recoginition rate against different k values used');
