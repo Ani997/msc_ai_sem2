@@ -8,7 +8,7 @@
 
 %% Loading of the images: You need to replace the directory 
 clear;
-Imagestrain = loadImagesInDirectory ( 'images/training-set/23x28/');
+Imagestrain = loadImagesInDirectory ('images/training-set/23x28/');
 [Imagestest, Identity] = loadTestImagesInDirectory ( 'images/testing-set/23x28/');
 
 
