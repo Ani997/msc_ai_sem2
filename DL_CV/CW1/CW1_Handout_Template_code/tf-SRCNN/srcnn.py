@@ -1,6 +1,7 @@
 import time
 import os
 import matplotlib.pyplot as plt
+import warnings
 
 import numpy as np
 import tensorflow as tf
@@ -8,6 +9,7 @@ import scipy
 import pdb
 from skimage import measure
 import skimage
+warnings.filterwarnings('ignore')
 
 
 def imread(path, is_grayscale=True):
@@ -122,7 +124,11 @@ filter_w1 = model['w1'].shape[3]
 filter_w2 = model['w2'].shape[3]
 filter_w3 = model['w3'].shape[3]
 
-print(filter_w1,filter_w2,filter_w3)
+print("*"*25)
+print("filter_w1",filter_w1,"filter_w2",filter_w2,"filter_w3",filter_w3)
+
+print("*"*25)
+print("Plotting Weights")
 fig = plt.figure(figsize = (8,8))
 for i in range(filter_w1):
   sub_image = fig.add_subplot(8, 8, i+1)
@@ -141,8 +147,8 @@ fig.savefig('weight_w2_subplot.jpg')
 
 plt.imshow(weight_w3[:, :, 0, 0] ,interpolation = None, cmap = 'gray')
 plt.show()
-plt.savefig('weight_w3_subplot.jpg')
-
+#plt.savefig('weight_w3_subplot.jpg') # aprrantly this does not save the image
+scipy.misc.imsave('weight_3.jpg', weight_w3[:,:,0,0]) # saving image
 
 """Initialize the model variabiles (w1, w2, w3, b1, b2, b3) with the pre-trained model file
 """
@@ -170,16 +176,61 @@ output_ = sess.run(conv3, feed_dict={inputs: input_})
 
 ##------ Add your code here: save the blurred and SR images and compute the psnr
 # hints: use the 'scipy.misc.imsave()'  and ' skimage.meause.compare_psnr()'
+print("*"*25)
+print("Saving Super resolution image, blurred_image and ground_truth image ")
 scipy.misc.imsave('SR.jpg',output_[0,:,:,0])
-scipy.misc.imsave('ground_truth.jpg',output_[0,:,:,0])
+scipy.misc.imsave('ground_truth.jpg',groudtruth_image)
 scipy.misc.imsave('blurred.jpg',blurred_image)
+print("*"*25)
+print("groudtruth_image.shape",groudtruth_image.shape)
+print("blurred_image.shape",blurred_image.shape)
+print("SR_image.shape",output_.shape)
 
-groudtruth_image_cropped = groudtruth_image[6:-6,6:-6] 
-blurred_image_cropped = blurred_image[6:-6,6:-6]
-sr_float = output_[0,:,:,0].astype(np.float64)
-
+groudtruth_image_cropped = groudtruth_image[6:-6,6:-6] # cropping the image to size of SR image size
+blurred_image_cropped = blurred_image[6:-6,6:-6] # croping the image to size of SR image
+sr_float = output_[0,:,:,0].astype(np.float64)  # to numpy float 64 as ground truth and 
+print("*"*25)
+print("Calculating PSNR values on ground_truth vs blurred_image and ground_truth vs SR image")
 psnr_sr_br = skimage.measure.compare_psnr(groudtruth_image_cropped,blurred_image_cropped)
 psnr_sr_gt = skimage.measure.compare_psnr(groudtruth_image_cropped,sr_float)
+print("*"*25)
 
 print("blurred image PSNR", str(psnr_sr_br))
 print("SR image PSNR", str(psnr_sr_gt))
+
+
+"""
+Results
+*************************
+filter_w1 64 filter_w2 32 filter_w3 1
+*************************
+Plotting Weights
+2020-02-23 12:56:54.015994: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2020-02-23 12:56:54.062759: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2020-02-23 12:56:54.063220: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x141f4e0 executing computations on platform CUDA. Devices:
+2020-02-23 12:56:54.063238: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): GeForce GT 740M, Compute Capability 3.5
+2020-02-23 12:56:54.082053: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2394450000 Hz
+2020-02-23 12:56:54.082631: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x1499540 executing computations on platform Host. Devices:
+2020-02-23 12:56:54.082662: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2020-02-23 12:56:54.082823: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: GeForce GT 740M major: 3 minor: 5 memoryClockRate(GHz): 1.0325
+pciBusID: 0000:01:00.0
+totalMemory: 1.96GiB freeMemory: 1.74GiB
+2020-02-23 12:56:54.082847: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2020-02-23 12:56:54.083578: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2020-02-23 12:56:54.083597: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2020-02-23 12:56:54.083606: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2020-02-23 12:56:54.083699: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 1553 MB memory) -> physical GPU (device: 0, name: GeForce GT 740M, pci bus id: 0000:01:00.0, compute capability: 3.5)
+*************************
+Saving Super resolution image, blurred_image and ground_truth image 
+*************************
+groudtruth_image.shape (255, 255)
+blurred_image.shape (255, 255)
+SR_image.shape (1, 243, 243, 1)
+*************************
+Calculating PSNR values on ground_truth vs blurred_image and ground_truth vs SR image
+*************************
+blurred image PSNR 20.453967418499577
+SR image PSNR 21.77124773032378
+
+"""
