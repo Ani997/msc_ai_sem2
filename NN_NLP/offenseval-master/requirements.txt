@@ -1,0 +1,10 @@
+sklearn
+gensim
+nltk
+numpy
+tqdm
+matplotlib
+keras
+wordcloud
+pydot
+graphviz
