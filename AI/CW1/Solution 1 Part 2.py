@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import string
+import statistics 
 
 
 # In[2]:
@@ -82,10 +83,12 @@ def mutation(children_set):
 # In[7]:
 
 
+
+
 # password_option = 1
 
 # population_size = 1000
-# num_parents = 20
+# num_parents = 500
 # mutation_rate = 0.2
 # passcode_options = list(string.ascii_uppercase+string.digits+'_')
 # passcode_length = 10
@@ -104,7 +107,7 @@ def mutation(children_set):
 #     if max([i[1] for i in fitness_scores]) == passcode_length:
 #         time_taken = time.time() - t_start
 #         password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0])        
-#         print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+#         print("Passwod resolved in"+str(generations)+"generations and"+str(time_taken)+"seconds \nDiscovered passcode =",password_resolved)
 #         break
 #     parents = select_parents(fitness_scores,method=selection_method)
 #     children = create_children(parents)
@@ -114,18 +117,123 @@ def mutation(children_set):
 # fitness_tracker = [max([i[1] for i in fitness_scores_list[j]]) for j in range(len(fitness_scores_list))]        
 # fig = plt.figure()
 # plt.plot(list(range(generations+1)), fitness_tracker)
-# fig.suptitle('Fitness Score by Generation', fontsize=14, fontweight='bold')
+# fig.suptitle('Fitness Score according to Generation', fontsize=14, fontweight='bold')
 # ax = fig.add_subplot(111)
 # ax.set_xlabel('Generation')
 # ax.set_ylabel('Fitness Score')
 # plt.savefig('images/'+str(password_option)+'_'+str(population_size)+'_'+str(num_parents)+'_'+str(mutation_rate)+'_'+str(selection_method)+'-'+str(generations)+'-'+str(round(time_taken,3))+'.png',dpi=300, bbox_inches='tight')
-# plt.show()  
-
-    
-    
+# plt.show()
 
 
 # In[8]:
+
+
+# password_option = 0
+# population_size = 100
+# num_parents = 75
+# mutation_rate = 0.2
+# passcode_options = list(string.ascii_uppercase+string.digits+'_')
+# passcode_length = 10
+# selection_method_list = ['tournament','rank','mixed_rank']
+
+# for selection_method in selection_method_list:
+#     reproduction_list = []
+#     time_list=[]
+#     print('working on',selection_method, 'please wait...')
+#     for i in range(50):
+#         fitness_tracker = []
+#         fitness_scores_list = []
+#         generations = 0
+#         population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
+#         t_start = time.time()
+#         while True:
+#             fitness_scores = fitness(population,190573735,password_option)
+#             fitness_scores_list.append(fitness_scores)
+#             if max([i[1] for i in fitness_scores]) == passcode_length:
+#                 time_taken = time.time() - t_start
+#                 password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0]) 
+#                 reproduction_list.append(generations*population_size)
+#                 time_list.append(time_taken)
+# #                 f.write(str(generations)+','+str(generations*population_size)+','+str(time_taken)+'\n')
+# #                 print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+#                 break
+#             parents = select_parents(fitness_scores,method=selection_method)
+#             children = create_children(parents)
+#             population = mutation(children)
+#             generations += 1    
+#     print("Average Reproductions for 50 iterations for",selection_method,"are",np.average(reproduction_list))
+
+#     print("Standard deveation of Reproductions for 50 iterations for",selection_method,"are",statistics.stdev(reproduction_list))
+#     print("Average Time for 50 iterations for",selection_method,"are",np.average(time_list),"\n")
+
+
+# In[ ]:
+
+
+population_size_list = [50, 100, 250, 500, 750, 1000, 2000, 3000]
+password_option = 0
+num_parents = 45
+mutation_rate = 0.2
+passcode_options = list(string.ascii_uppercase+string.digits+'_')
+passcode_length = 10
+selection_method_list = ['tournament']#,'rank','mixed_rank']
+
+for selection_method in selection_method_list:
+    reproduction_rate = []
+    time_rate = []
+    for population_size in population_size_list:
+        reproduction_list = []
+        time_list=[]
+        print('working on',selection_method,'for population size',population_size,'please wait...')
+        for i in range(50):
+            fitness_tracker = []
+            fitness_scores_list = []
+            generations = 0
+            population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
+            t_start = time.time()
+            while True:
+                fitness_scores = fitness(population,190573735,password_option)
+                fitness_scores_list.append(fitness_scores)
+                if max([i[1] for i in fitness_scores]) == passcode_length:
+                    time_taken = time.time() - t_start
+                    password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0]) 
+                    reproduction_list.append(generations*population_size)
+                    time_list.append(time_taken)
+    #                 f.write(str(generations)+','+str(generations*population_size)+','+str(time_taken)+'\n')
+    #                 print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+                    break
+                parents = select_parents(fitness_scores,method=selection_method)
+                children = create_children(parents)
+                population = mutation(children)
+                generations += 1    
+        reproduction_rate.append(np.average(reproduction_list))
+        time_rate.append(np.average(time_list))
+    print(reproduction_rate)
+    print(time_rate)
+    fig = plt.figure()
+    plt.plot(population_size_list, reproduction_rate)
+    fig.suptitle('Reproduction rate according to Population size', fontsize=14, fontweight='bold')
+    ax = fig.add_subplot(111)
+    ax.set_xlabel('population size')
+    ax.set_ylabel('reproduction rate')
+    plt.savefig('images/'+str(password_option)+'_'+str(population_size)+'_'+str(num_parents)+'_'+str(mutation_rate)+'_'+str(selection_method)+'-'+str(generations)+'-'+str(round(time_taken,3))+'.png',dpi=300, bbox_inches='tight')
+    plt.show()
+
+
+# In[ ]:
+
+
+# fig = plt.figure()
+# plt.plot(population_size_list, reproduction_rate)
+# fig.suptitle('Reproduction rate according to Population size', fontsize=14, fontweight='bold')
+# ax = fig.add_subplot(111)
+# ax.set_xlabel('population size')
+# ax.set_ylabel('reproduction rate')
+# plt.savefig('images/'+str(password_option)+'_'+str(population_size)+'_'+str(num_parents)+'_'+str(mutation_rate)+'_'+str(selection_method)+'-'+str(generations)+'-'+str(round(time_taken,3))+'.png',dpi=300, bbox_inches='tight')
+# plt.show()
+
+
+# In[ ]:
 
 
 # from sklearn.model_selection import ParameterGrid
@@ -171,94 +279,94 @@ def mutation(children_set):
     
 
 
-# In[9]:
+# In[ ]:
 
 
-from sklearn.model_selection import ParameterGrid
-param_grid = {'population_size': [100, 250, 500, 750, 1000, 2000, 3000],
-              'num_parents' : [5, 10, 15, 20, 25, 35, 50],
-              'mutation_rate':[0.1,0.3,0.5,0.8,0.9,1],
-              'selection_method':['rank','mixed_rank','tournament']
-             }
+# from sklearn.model_selection import ParameterGrid
+# param_grid = {'population_size': [100, 250, 500, 750, 1000, 2000, 3000],
+#               'num_parents' : [5, 10, 15, 20, 25, 35, 50],
+#               'mutation_rate':[0.1,0.3,0.5,0.8,0.9,1],
+#               'selection_method':['rank','mixed_rank','tournament']
+#              }
 
-grid = ParameterGrid(param_grid)
-password_option = 1
-passcode_options = list(string.ascii_uppercase+string.digits+'_')
-passcode_length = 10
-f = open('grid_search.csv','a')
-# for i,params in enumerate(grid):
+# grid = ParameterGrid(param_grid)
+# password_option = 1
+# passcode_options = list(string.ascii_uppercase+string.digits+'_')
+# passcode_length = 10
+# f = open('grid_search.csv','a')
+# # for i,params in enumerate(grid):
 
-# #     print(population_size, num_parents , mutation_rate, selection_method)
-#     print(i)
+# # #     print(population_size, num_parents , mutation_rate, selection_method)
+# #     print(i)
 
     
     
     
-def score(parameter_tuple):
-    grid,file = (parameter_tuple)
-    f = open('grid_search_'+file+'.csv','a')
-#     print(file)
-    for i,params in enumerate(grid):
-        population_size = params['population_size']
-        num_parents = params['num_parents']
-        mutation_rate = params['mutation_rate']
-        selection_method = params['selection_method']        
-#         f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method))
-        population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
-        fitness_tracker = []
-        fitness_scores_list = []
-        generations = 0
-        t_start = time.time()
-        while True:
-            fitness_scores = fitness(population,190573735,password_option)
-            fitness_scores_list.append(fitness_scores)
-            if max([i[1] for i in fitness_scores]) == passcode_length:
-                time_taken = time.time() - t_start
-                password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0]) 
-    #             return population_size, num_parents , mutation_rate, selection_method, generations, time_taken
-                f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method)+', '+str(generations)+', '+str(round(time_taken,3))+'\n')
-    #             print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
-                break
-            parents = select_parents(fitness_scores,method=selection_method)
-            children = create_children(parents)
-            population = mutation(children)
-            generations += 1    
-    f.close()
+# def score(parameter_tuple):
+#     grid,file = (parameter_tuple)
+#     f = open('grid_search_'+file+'.csv','a')
+# #     print(file)
+#     for i,params in enumerate(grid):
+#         population_size = params['population_size']
+#         num_parents = params['num_parents']
+#         mutation_rate = params['mutation_rate']
+#         selection_method = params['selection_method']        
+# #         f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method))
+#         population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
+#         fitness_tracker = []
+#         fitness_scores_list = []
+#         generations = 0
+#         t_start = time.time()
+#         while True:
+#             fitness_scores = fitness(population,190573735,password_option)
+#             fitness_scores_list.append(fitness_scores)
+#             if max([i[1] for i in fitness_scores]) == passcode_length:
+#                 time_taken = time.time() - t_start
+#                 password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0]) 
+#     #             return population_size, num_parents , mutation_rate, selection_method, generations, time_taken
+#                 f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method)+', '+str(generations)+', '+str(round(time_taken,3))+'\n')
+#     #             print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+#                 break
+#             parents = select_parents(fitness_scores,method=selection_method)
+#             children = create_children(parents)
+#             population = mutation(children)
+#             generations += 1    
+#     f.close()
 
 
-# In[10]:
+# In[ ]:
 
 
-from multiprocessing import Pool, freeze_support 
+# from multiprocessing import Pool, freeze_support 
 
-def multicore_function(function_name,alist):
-    '''
-    this function accept four arguments
-    1.function name: name of that function which will called.
-    2.wfname: name of file which will be written.
-    3.alist: list of data which we breaks in four parts and assigned to different cor.
-    4.otherparam: this is review date file name. it will created when updates are found in user reviews.
-    it takes list of data lines and make 4 chunckes(parts) and assigned to different cor
-    '''
-    freeze_support()
-    def chunkify(lst,n):
-        return [lst[i::n] for i in range(n)]
-    #create a process Pool with 4 processes
-    pool = Pool(processes=8)
+# def multicore_function(function_name,alist):
+#     '''
+#     this function accept four arguments
+#     1.function name: name of that function which will called.
+#     2.wfname: name of file which will be written.
+#     3.alist: list of data which we breaks in four parts and assigned to different cor.
+#     4.otherparam: this is review date file name. it will created when updates are found in user reviews.
+#     it takes list of data lines and make 4 chunckes(parts) and assigned to different cor
+#     '''
+#     freeze_support()
+#     def chunkify(lst,n):
+#         return [lst[i::n] for i in range(n)]
+#     #create a process Pool with 4 processes
+#     pool = Pool(processes=8)
 
-    part1,part2,part3,part4,part5,part6,part7,part8,part9,part10,part11,part12 = (part for part in chunkify(alist, 12))
-#     print(part1[0])
-    #map doWork to availble Pool processes
-    results = pool.map(function_name, (((part1,'part1.csv')),((part2,'part2.csv')),((part3,'part3.csv')),((part4,'part4.csv')),((part5,'part5.csv')),((part6,'part6.csv')),((part7,'part7.csv')),((part8,'part8.csv')),((part9,'part9.csv')),((part10,'part10.csv')),((part11,'part11.csv')),((part12,'part12.csv'))))
-    return results
-
-
+#     part1,part2,part3,part4,part5,part6,part7,part8,part9,part10,part11,part12 = (part for part in chunkify(alist, 12))
+# #     print(part1[0])
+#     #map doWork to availble Pool processes
+#     results = pool.map(function_name, (((part1,'part1.csv')),((part2,'part2.csv')),((part3,'part3.csv')),((part4,'part4.csv')),((part5,'part5.csv')),((part6,'part6.csv')),((part7,'part7.csv')),((part8,'part8.csv')),((part9,'part9.csv')),((part10,'part10.csv')),((part11,'part11.csv')),((part12,'part12.csv'))))
+#     return results
 
 
-# In[11]:
 
 
-multicore_function(score,list(grid))
+# In[ ]:
+
+
+# multicore_function(score,list(grid))
 
 
 # In[ ]:
