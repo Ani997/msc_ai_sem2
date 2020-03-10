@@ -125,7 +125,53 @@ def mutation(children_set):
     
 
 
-# In[ ]:
+# In[8]:
+
+
+# from sklearn.model_selection import ParameterGrid
+# param_grid = {'population_size': [100, 250, 500, 750, 1000, 2000, 3000],
+#               'num_parents' : [5, 10, 15, 20, 25, 35, 50],
+#               'mutation_rate':[0.1,0.3,0.5,0.8,0.9,1],
+#               'selection_method':['rank','mixed_rank','tournament']
+#              }
+
+# grid = ParameterGrid(param_grid)
+# password_option = 1
+# passcode_options = list(string.ascii_uppercase+string.digits+'_')
+# passcode_length = 10
+# f = open('grid_search.csv','a')
+# for i,params in enumerate(grid):
+#     population_size = params['population_size']
+#     num_parents = params['num_parents']
+#     mutation_rate = params['mutation_rate']
+#     selection_method = params['selection_method']
+# #     print(population_size, num_parents , mutation_rate, selection_method)
+#     print(i)
+#     population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
+#     fitness_tracker = []
+#     fitness_scores_list = []
+#     generations = 0
+#     t_start = time.time()
+#     while True:
+#         fitness_scores = fitness(population,190573735,password_option)
+#         fitness_scores_list.append(fitness_scores)
+#         if max([i[1] for i in fitness_scores]) == passcode_length:
+#             time_taken = time.time() - t_start
+#             password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0])        
+#             f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method)+', '+str(generations)+', '+str(round(time_taken,3))+'\n')
+# #             print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+#             break
+#         parents = select_parents(fitness_scores,method=selection_method)
+#         children = create_children(parents)
+#         population = mutation(children)
+#         generations += 1    
+
+# f.close()
+    
+    
+
+
+# In[9]:
 
 
 from sklearn.model_selection import ParameterGrid
@@ -140,39 +186,83 @@ password_option = 1
 passcode_options = list(string.ascii_uppercase+string.digits+'_')
 passcode_length = 10
 f = open('grid_search.csv','a')
-for i,params in enumerate(grid):
-    population_size = params['population_size']
-    num_parents = params['num_parents']
-    mutation_rate = params['mutation_rate']
-    selection_method = params['selection_method']
-#     print(population_size, num_parents , mutation_rate, selection_method)
-    print(i)
-    population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
-    fitness_tracker = []
-    fitness_scores_list = []
-    generations = 0
-    t_start = time.time()
-    while True:
-        fitness_scores = fitness(population,190573735,password_option)
-        fitness_scores_list.append(fitness_scores)
-        if max([i[1] for i in fitness_scores]) == passcode_length:
-            time_taken = time.time() - t_start
-            password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0])        
-            f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method)+', '+str(generations)+', '+str(round(time_taken,3))+'\n')
-#             print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
-            break
-        parents = select_parents(fitness_scores,method=selection_method)
-        children = create_children(parents)
-        population = mutation(children)
-        generations += 1    
+# for i,params in enumerate(grid):
 
-f.close()
+# #     print(population_size, num_parents , mutation_rate, selection_method)
+#     print(i)
+
     
     
+    
+def score(parameter_tuple):
+    grid,file = (parameter_tuple)
+    f = open('grid_search_'+file+'.csv','a')
+#     print(file)
+    for i,params in enumerate(grid):
+        population_size = params['population_size']
+        num_parents = params['num_parents']
+        mutation_rate = params['mutation_rate']
+        selection_method = params['selection_method']        
+#         f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method))
+        population = [random.choices(passcode_options,k=passcode_length) for i in range(population_size)]
+        fitness_tracker = []
+        fitness_scores_list = []
+        generations = 0
+        t_start = time.time()
+        while True:
+            fitness_scores = fitness(population,190573735,password_option)
+            fitness_scores_list.append(fitness_scores)
+            if max([i[1] for i in fitness_scores]) == passcode_length:
+                time_taken = time.time() - t_start
+                password_resolved = ''.join([i[0] for i in fitness_scores if i[1] == passcode_length][0]) 
+    #             return population_size, num_parents , mutation_rate, selection_method, generations, time_taken
+                f.write(str(password_option)+', '+str(population_size)+', '+str(num_parents)+', '+str(mutation_rate)+', '+str(selection_method)+', '+str(generations)+', '+str(round(time_taken,3))+'\n')
+    #             print("Passwod resolved in {} generations and {} seconds! \nDiscovered passcode = {}".format(generations,time_taken,password_resolved))
+                break
+            parents = select_parents(fitness_scores,method=selection_method)
+            children = create_children(parents)
+            population = mutation(children)
+            generations += 1    
+    f.close()
+
+
+# In[10]:
+
+
+from multiprocessing import Pool, freeze_support 
+
+def multicore_function(function_name,alist):
+    '''
+    this function accept four arguments
+    1.function name: name of that function which will called.
+    2.wfname: name of file which will be written.
+    3.alist: list of data which we breaks in four parts and assigned to different cor.
+    4.otherparam: this is review date file name. it will created when updates are found in user reviews.
+    it takes list of data lines and make 4 chunckes(parts) and assigned to different cor
+    '''
+    freeze_support()
+    def chunkify(lst,n):
+        return [lst[i::n] for i in range(n)]
+    #create a process Pool with 4 processes
+    pool = Pool(processes=8)
+
+    part1,part2,part3,part4,part5,part6,part7,part8,part9,part10,part11,part12 = (part for part in chunkify(alist, 12))
+#     print(part1[0])
+    #map doWork to availble Pool processes
+    results = pool.map(function_name, (((part1,'part1.csv')),((part2,'part2.csv')),((part3,'part3.csv')),((part4,'part4.csv')),((part5,'part5.csv')),((part6,'part6.csv')),((part7,'part7.csv')),((part8,'part8.csv')),((part9,'part9.csv')),((part10,'part10.csv')),((part11,'part11.csv')),((part12,'part12.csv'))))
+    return results
+
+
+
+
+# In[11]:
+
+
+multicore_function(score,list(grid))
 
 
 # In[ ]:
 
 
-len(grid)
+
 
