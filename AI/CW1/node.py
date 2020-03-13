@@ -10,28 +10,28 @@ class Node:
         self.cost = cost
         self.node = node
 
-    def get_cost(self):
+    def return_cost(self):
         return self.cost
 
-    def set_cost(self,cost):
+    def put_cost(self,cost):
         self.cost = cost
 
-    def get_state(self):
+    def return_state(self):
         return self.state
 
-    def set_state(self, state):
+    def put_state(self, state):
         self.state = state
 
-    def get_depth(self):
+    def return_depth(self):
         return self.depth
 
-    def set_depth(self, depth):
+    def put_depth(self, depth):
         self.depth = depth
 
-    def get_node(self):
+    def return_node(self):
         return self.node
 
-    def set_node(self,node):
+    def put_node(self,node):
         self.node = node
 
     def __str__(self):
