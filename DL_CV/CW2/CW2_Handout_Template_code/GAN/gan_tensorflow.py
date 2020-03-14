@@ -97,7 +97,7 @@ def show_train_hist(hist, show = False, save = False, path = 'Train_hist.png'):
 # training parameters
 batch_size = 100
 lr = 0.0002
-train_epoch = 100
+train_epoch = 1000
 
 # load MNIST
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
