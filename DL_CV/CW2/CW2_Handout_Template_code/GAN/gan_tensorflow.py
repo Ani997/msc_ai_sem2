@@ -1,9 +1,8 @@
-import os, time, itertools, pickle
+import os, time, itertools, imageio, pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-
 # G(z)
 def generator(x):
     # initializers
@@ -12,16 +11,16 @@ def generator(x):
     # 1st hidden layer
     w0 = tf.get_variable('G_w0', [x.get_shape()[1], 256], initializer=w_init)
     b0 = tf.get_variable('G_b0', [256], initializer=b_init)
-    h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
+    h0 = leaky_relu(tf.matmul(x, w0) + b0)
      # 2nd hidden layer
     w1 = tf.get_variable('G_w1', [h0.get_shape()[1], 512], initializer=w_init)
     b1 = tf.get_variable('G_b1', [512], initializer=b_init)
-    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
+    h1 = leaky_relu(tf.matmul(h0, w1) + b1)
 
       # 3rd hidden layer
     w2 = tf.get_variable('G_w2', [h1.get_shape()[1], 1024], initializer=w_init)
     b2 = tf.get_variable('G_b2', [1024], initializer=b_init)
-    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
+    h2 = leaky_relu(tf.matmul(h1, w2) + b2)
 
     # output hidden layer
     w3 = tf.get_variable('G_w3', [h2.get_shape()[1], 784], initializer=w_init)
@@ -38,15 +37,15 @@ def discriminator(x, drop_out):
     # 1st hidden layer
     w0 = tf.get_variable('D_w0', [x.get_shape()[1], 1024], initializer=w_init)
     b0 = tf.get_variable('D_b0', [1024], initializer=b_init)
-    h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
+    h0 = leaky_relu(tf.matmul(x, w0) + b0)
     # 2nd hidden layer
     w1 = tf.get_variable('D_w1', [h0.get_shape()[1], 512], initializer=w_init)
     b1 = tf.get_variable('D_b1', [512], initializer=b_init)
-    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
+    h1 = leaky_relu(tf.matmul(h0, w1) + b1)
     # 3rd hidden layer
     w2 = tf.get_variable('D_w2', [h1.get_shape()[1], 256], initializer=w_init)
     b2 = tf.get_variable('D_b2', [256], initializer=b_init)
-    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
+    h2 = leaky_relu(tf.matmul(h1, w2) + b2)
     # output layer
     w3 = tf.get_variable('D_w3', [h2.get_shape()[1], 1], initializer=w_init)
     b3 = tf.get_variable('D_b3', [1], initializer=b_init)
@@ -55,9 +54,13 @@ def discriminator(x, drop_out):
 
     return o
 
-# def show_result(num_epoch, show = False, save = False, path = 'result.png'):
-#     z_ = np.random.normal(0, 1, (25, 100))    # z_ is the input of generator, every epochs will random produce input
-#     ##Code:ToDo complete the rest of part
+def leaky_relu(x):
+    return (tf.nn.relu(x) - 0.2 * tf.nn.relu(-x))
+
+#def lrelu(x):
+#    return tf.maximum(x, 0.2 * x)
+
+
 def show_result(num_epoch, show = False, save = False, path = 'result.png'):
     z_ = np.random.normal(0, 1, (25, 100))    # z_ is the input of generator, every epochs will random produce input
     ##Code:ToDo complete the rest of part
@@ -114,6 +117,7 @@ def show_train_hist(hist, show = False, save = False, path = 'Train_hist.png'):
 # training parameters
 batch_size = 100
 lr = 0.0002
+#lr = 0.01
 train_epoch = 100
 
 # load MNIST
@@ -151,10 +155,14 @@ sess = tf.InteractiveSession()
 tf.global_variables_initializer().run()
 
 # results save folder
+# save in results_drop when removing dropout
 if not os.path.isdir('MNIST_GAN_results'):
     os.mkdir('MNIST_GAN_results')
 if not os.path.isdir('MNIST_GAN_results/results'):
     os.mkdir('MNIST_GAN_results/results')
+if not os.path.isdir('MNIST_GAN_results/results_drop'):
+    os.mkdir('MNIST_GAN_results/results_drop')
+
 train_hist = {}
 train_hist['D_losses'] = []
 train_hist['G_losses'] = []
@@ -171,9 +179,10 @@ for epoch in range(train_epoch):
         # update discriminator
         x_ = train_set[iter*batch_size:(iter+1)*batch_size]
         z_ = np.random.normal(0, 1, (batch_size, 100))
-
+        # set dropout to zero to remove dropout
         loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, drop_out: 0.3})
         D_losses.append(loss_d_)
+
 
         # update generator
         z_ = np.random.normal(0, 1, (batch_size, 100))
@@ -184,10 +193,9 @@ for epoch in range(train_epoch):
     per_epoch_ptime = epoch_end_time - epoch_start_time
     print('[%d/%d] - ptime: %.2f loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, np.mean(D_losses), np.mean(G_losses)))
 
-    ### Code: TODO Code complete show_result function)
+    ### Code: TODO Code complet show_result function)
     p = 'MNIST_GAN_results/results/MNIST_GAN_' + str(epoch + 1) + '.png'
     show_result((epoch + 1), save=True, path=p)
-
 
     train_hist['D_losses'].append(np.mean(D_losses))
     train_hist['G_losses'].append(np.mean(G_losses))
@@ -199,6 +207,10 @@ print('Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f' % (np.mean(train_
 print("Training finish!... save training results")
 with open('MNIST_GAN_results/train_hist.pkl', 'wb') as f:
     pickle.dump(train_hist, f)
-show_train_hist(train_hist, save=True, path='MNIST_GAN_results/MNIST_GAN_train_hist.png')
+show_train_hist(train_hist, save=True, path='MNIST_GAN_results/MNIST_GAN_train_hist_ep_.png')
 images = []
+for e in range(train_epoch):
+    img_name = 'MNIST_GAN_results/results/MNIST_GAN_' + str(e + 1) + '.png'
+    images.append(imageio.imread(img_name))
+imageio.mimsave('MNIST_GAN_results/generation_animation_.gif', images, fps=5)
 sess.close()
