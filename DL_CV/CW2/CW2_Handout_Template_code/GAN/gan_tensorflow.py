@@ -11,19 +11,19 @@ def generator(x):
     # 1st hidden layer
     w0 = tf.get_variable('G_w0', [x.get_shape()[1], 128], initializer=w_init)
     b0 = tf.get_variable('G_b0', [128], initializer=b_init)
-    h0 = tf.nn.relu(tf.matmul(x, w0) + b0)
+    h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
     # 2nd hidden layer
     w1 = tf.get_variable('G_w1', [h0.get_shape()[1], 256], initializer=w_init)
     b1 = tf.get_variable('G_b1', [256], initializer=b_init)
-    h1 = tf.nn.relu(tf.matmul(h0, w1) + b1)
+    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
     # 3rd hidden layer
     w2 = tf.get_variable('G_w2', [h1.get_shape()[1], 512], initializer=w_init)
     b2 = tf.get_variable('G_b2', [512], initializer=b_init)
-    h2 = tf.nn.relu(tf.matmul(h1, w2) + b2)
+    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
     # 4th hidden layer
     w3 = tf.get_variable('G_w3', [h2.get_shape()[1], 1024], initializer=w_init)
     b3 = tf.get_variable('G_b3', [1024], initializer=b_init)
-    h3 = tf.nn.relu(tf.matmul(h2, w3) + b3)
+    h3 = tf.nn.leaky_relu(tf.matmul(h2, w3) + b3)
 
     ### Code:ToDo (Change the architecture as CW2 Guidance required)
     
@@ -46,19 +46,19 @@ def discriminator(x, drop_out):
     # 1st hidden layer
     w0 = tf.get_variable('D_w0', [x.get_shape()[1], 784], initializer=w_init)
     b0 = tf.get_variable('D_b0', [784], initializer=b_init)
-    h0 = tf.nn.relu(tf.matmul(x, w0) + b0)
+    h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
     # 2st hidden layer
     w1 = tf.get_variable('D_w1', [h0.get_shape()[1], 1024], initializer=w_init)
     b1 = tf.get_variable('D_b1', [1024], initializer=b_init)
-    h1 = tf.nn.relu(tf.matmul(h0, w1) + b1)
+    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
     # 3t hidden layer
     w2 = tf.get_variable('D_w2', [h1.get_shape()[1], 512], initializer=w_init)
     b2 = tf.get_variable('D_b2', [512], initializer=b_init)
-    h2 = tf.nn.relu(tf.matmul(h1, w2) + b2)
+    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
     # 4st hidden layer
     w3 = tf.get_variable('D_w3', [h2.get_shape()[1], 256], initializer=w_init)
     b3 = tf.get_variable('D_b3', [256], initializer=b_init)
-    h3 = tf.nn.relu(tf.matmul(h2, w3) + b3)
+    h3 = tf.nn.leaky_relu(tf.matmul(h2, w3) + b3)
     # output layer
     w4 = tf.get_variable('D_w4', [h3.get_shape()[1], 1], initializer=w_init)
     b4 = tf.get_variable('D_b4', [1], initializer=b_init)
