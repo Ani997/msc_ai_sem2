@@ -47,14 +47,17 @@ def discriminator(x, drop_out):
     w0 = tf.get_variable('D_w0', [x.get_shape()[1], 1024], initializer=w_init)
     b0 = tf.get_variable('D_b0', [1024], initializer=b_init)
     h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
+    d0 = tf.nn.dropout(h0, drop_out) 
     # 2st hidden layer
     w1 = tf.get_variable('D_w1', [h0.get_shape()[1], 512], initializer=w_init)
     b1 = tf.get_variable('D_b1', [512], initializer=b_init)
-    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
+    h1 = tf.nn.leaky_relu(tf.matmul(d0, w1) + b1)
+    d1 = tf.nn.dropout(h1, drop_out)
     # 3t hidden layer
     w2 = tf.get_variable('D_w2', [h1.get_shape()[1], 256], initializer=w_init)
     b2 = tf.get_variable('D_b2', [256], initializer=b_init)
-    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
+    h2 = tf.nn.leaky_relu(tf.matmul(d1, w2) + b2)
+    d2 = tf.nn.dropout(h2, drop_out)
     # 4st hidden layer
     # w3 = tf.get_variable('D_w3', [h2.get_shape()[1], 256], initializer=w_init)
     # b3 = tf.get_variable('D_b3', [256], initializer=b_init)
@@ -62,7 +65,7 @@ def discriminator(x, drop_out):
     # output layer
     w4 = tf.get_variable('D_w4', [h2.get_shape()[1], 1], initializer=w_init)
     b4 = tf.get_variable('D_b4', [1], initializer=b_init)
-    o = tf.sigmoid(tf.matmul(h2, w4) + b4)
+    o = tf.sigmoid(tf.matmul(d2, w4) + b4)
     
     return o
 
