@@ -166,10 +166,10 @@ sess = tf.InteractiveSession(config=config)
 tf.global_variables_initializer().run()
 
 # results save folder
-if not os.path.isdir('MNIST_GAN_results'):
-    os.mkdir('MNIST_GAN_results')
-if not os.path.isdir('MNIST_GAN_results/results'):
-    os.mkdir('MNIST_GAN_results/results')
+if not os.path.isdir('MNIST_GAN_results_without_dropout'):
+    os.mkdir('MNIST_GAN_results_without_dropout')
+if not os.path.isdir('MNIST_GAN_results_without_dropout/results'):
+    os.mkdir('MNIST_GAN_results_without_dropout/results')
 train_hist = {}
 train_hist['D_losses'] = []
 train_hist['G_losses'] = []
@@ -187,12 +187,12 @@ for epoch in range(train_epoch):
         x_ = train_set[iter*batch_size:(iter+1)*batch_size]
         z_ = np.random.normal(0, 1, (batch_size, 100))
 
-        loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, drop_out: 0.3})
+        loss_d_, _ = sess.run([D_loss, D_optim], {x: x_, z: z_, drop_out: 0.0})
         D_losses.append(loss_d_)
 
         # update generator
         z_ = np.random.normal(0, 1, (batch_size, 100))
-        loss_g_, _ = sess.run([G_loss, G_optim], {z: z_, drop_out: 0.3})
+        loss_g_, _ = sess.run([G_loss, G_optim], {z: z_, drop_out: 0.0})
         G_losses.append(loss_g_)
 
     epoch_end_time = time.time()
@@ -200,7 +200,7 @@ for epoch in range(train_epoch):
     print('[%d/%d] - ptime: %.2f loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, np.mean(D_losses), np.mean(G_losses)))
 
     ### Code: TODO Code complete show_result function)
-    p = 'MNIST_GAN_results/results/MNIST_GAN_' + str(epoch + 1) + '.png'
+    p = 'MNIST_GAN_results_without_dropout/results/MNIST_GAN_' + str(epoch + 1) + '.png'
     show_result((epoch + 1), save=True, path=p)
 
 
@@ -212,7 +212,7 @@ total_ptime = end_time - start_time
 train_hist['total_ptime'].append(total_ptime)
 print('Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f' % (np.mean(train_hist['per_epoch_ptimes']), train_epoch, total_ptime))
 print("Training finish!... save training results")
-with open('MNIST_GAN_results/train_hist.pkl', 'wb') as f:
+with open('MNIST_GAN_results_without_dropout/train_hist.pkl', 'wb') as f:
     pickle.dump(train_hist, f)
 show_train_hist(train_hist, save=True, path='MNIST_GAN_results/MNIST_GAN_train_hist.png')
 images = []
