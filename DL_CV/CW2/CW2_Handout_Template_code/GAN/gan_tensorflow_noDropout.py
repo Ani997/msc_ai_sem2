@@ -47,17 +47,17 @@ def discriminator(x, drop_out):
     w0 = tf.get_variable('D_w0', [x.get_shape()[1], 1024], initializer=w_init)
     b0 = tf.get_variable('D_b0', [1024], initializer=b_init)
     h0 = tf.nn.leaky_relu(tf.matmul(x, w0) + b0)
-    d0 = tf.nn.dropout(h0, drop_out) 
+    # d0 = tf.nn.dropout(h0, drop_out) 
     # 2st hidden layer
     w1 = tf.get_variable('D_w1', [h0.get_shape()[1], 512], initializer=w_init)
     b1 = tf.get_variable('D_b1', [512], initializer=b_init)
-    h1 = tf.nn.leaky_relu(tf.matmul(d0, w1) + b1)
-    d1 = tf.nn.dropout(h1, drop_out)
+    h1 = tf.nn.leaky_relu(tf.matmul(h0, w1) + b1)
+    # d1 = tf.nn.dropout(h1, drop_out)
     # 3t hidden layer
     w2 = tf.get_variable('D_w2', [h1.get_shape()[1], 256], initializer=w_init)
     b2 = tf.get_variable('D_b2', [256], initializer=b_init)
-    h2 = tf.nn.leaky_relu(tf.matmul(d1, w2) + b2)
-    d2 = tf.nn.dropout(h2, drop_out)
+    h2 = tf.nn.leaky_relu(tf.matmul(h1, w2) + b2)
+    # d2 = tf.nn.dropout(h2, drop_out)
     # 4st hidden layer
     # w3 = tf.get_variable('D_w3', [h2.get_shape()[1], 256], initializer=w_init)
     # b3 = tf.get_variable('D_b3', [256], initializer=b_init)
@@ -65,7 +65,7 @@ def discriminator(x, drop_out):
     # output layer
     w4 = tf.get_variable('D_w4', [h2.get_shape()[1], 1], initializer=w_init)
     b4 = tf.get_variable('D_b4', [1], initializer=b_init)
-    o = tf.sigmoid(tf.matmul(d2, w4) + b4)
+    o = tf.sigmoid(tf.matmul(h2, w4) + b4)
     
     return o
 
@@ -166,10 +166,10 @@ sess = tf.InteractiveSession(config=config)
 tf.global_variables_initializer().run()
 
 # results save folder
-if not os.path.isdir('MNIST_GAN_results'):
-    os.mkdir('MNIST_GAN_results')
-if not os.path.isdir('MNIST_GAN_results/results'):
-    os.mkdir('MNIST_GAN_results/results')
+if not os.path.isdir('MNIST_GAN_results_noDropout'):
+    os.mkdir('MNIST_GAN_results_noDropout')
+if not os.path.isdir('MNIST_GAN_results_noDropout/results'):
+    os.mkdir('MNIST_GAN_results_noDropout/results')
 train_hist = {}
 train_hist['D_losses'] = []
 train_hist['G_losses'] = []
@@ -200,7 +200,7 @@ for epoch in range(train_epoch):
     print('[%d/%d] - ptime: %.2f loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, np.mean(D_losses), np.mean(G_losses)))
 
     ### Code: TODO Code complete show_result function)
-    p = 'MNIST_GAN_results/results/MNIST_GAN_' + str(epoch + 1) + '.png'
+    p = 'MNIST_GAN_results_noDropout/results/MNIST_GAN_' + str(epoch + 1) + '.png'
     show_result((epoch + 1), save=True, path=p)
 
 
@@ -212,8 +212,8 @@ total_ptime = end_time - start_time
 train_hist['total_ptime'].append(total_ptime)
 print('Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f' % (np.mean(train_hist['per_epoch_ptimes']), train_epoch, total_ptime))
 print("Training finish!... save training results")
-with open('MNIST_GAN_results/train_hist.pkl', 'wb') as f:
+with open('MNIST_GAN_results_noDropout/train_hist.pkl', 'wb') as f:
     pickle.dump(train_hist, f)
-show_train_hist(train_hist, save=True, path='MNIST_GAN_results/MNIST_GAN_train_hist.png')
+show_train_hist(train_hist, save=True, path='MNIST_GAN_results_noDropout/MNIST_GAN_train_hist.png')
 images = []
 sess.close()
