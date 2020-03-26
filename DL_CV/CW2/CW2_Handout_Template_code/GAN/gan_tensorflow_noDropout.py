@@ -88,7 +88,7 @@ def show_result(num_epoch, show = False, save = False, path = 'result.png'):
             ax[i, j].imshow(np.reshape(gen_output[j+i * 5], (28, 28)), cmap='gray')
 
     label = 'Epoch {0}'.format(num_epoch)
-    fig.text(0.5, 0.8, label, ha='center')
+    fig.text(0.5, 0.9, label, ha='center')
 
 
 
