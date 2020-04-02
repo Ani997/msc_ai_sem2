@@ -1,0 +1,48 @@
+$ python coref_model_keras_complete.py 2>&1  >> log.txt
+Using TensorFlow backend.
+/home/nv/virtpy3tf/lib/python3.6/site-packages/sklearn/utils/linear_assignment_.py:21: DeprecationWarning: The linear_assignment_ module is deprecated in 0.21 and will be removed from 0.23. Use scipy.optimize.linear_sum_assignment instead.
+  DeprecationWarning)
+WARNING:tensorflow:From /home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/control_flow_ops.py:423: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+WARNING:tensorflow:From /home/nv/virtpy3tf/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py:3445: calling dropout (from tensorflow.python.ops.nn_ops) with keep_prob is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep_prob`.
+Traceback (most recent call last):
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/array_ops.py", line 3271, in gather
+    return params.sparse_read(indices, name=name)
+AttributeError: 'Tensor' object has no attribute 'sparse_read'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "coref_model_keras_complete.py", line 231, in <module>
+    model.build()
+  File "coref_model_keras_complete.py", line 44, in build
+    mention_pair_emb = Lambda(lambda x: K.gather(x[0], x[1]))([flatten_word_output,mention_pairs])
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/keras/engine/base_layer.py", line 474, in __call__
+    output_shape = self.compute_output_shape(input_shape)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/keras/layers/core.py", line 649, in compute_output_shape
+    x = self.call(xs)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/keras/layers/core.py", line 687, in call
+    return self.function(inputs, **arguments)
+  File "coref_model_keras_complete.py", line 44, in <lambda>
+    mention_pair_emb = Lambda(lambda x: K.gather(x[0], x[1]))([flatten_word_output,mention_pairs])
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py", line 1228, in gather
+    return tf.nn.embedding_lookup(reference, indices)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/embedding_ops.py", line 316, in embedding_lookup
+    transform_fn=None)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/embedding_ops.py", line 133, in _embedding_lookup_and_transform
+    result = _clip(array_ops.gather(params[0], ids, name=name),
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/util/dispatch.py", line 180, in wrapper
+    return target(*args, **kwargs)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/array_ops.py", line 3273, in gather
+    return gen_array_ops.gather_v2(params, indices, axis, name=name)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/ops/gen_array_ops.py", line 3748, in gather_v2
+    "GatherV2", params=params, indices=indices, axis=axis, name=name)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 610, in _apply_op_helper
+    param_name=input_name)
+  File "/home/nv/virtpy3tf/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 60, in _SatisfiesTypeConstraint
+    ", ".join(dtypes.as_dtype(x).name for x in allowed_list)))
+TypeError: Value passed to parameter 'indices' has DataType float32 not in list of allowed values: int32, int64
+
