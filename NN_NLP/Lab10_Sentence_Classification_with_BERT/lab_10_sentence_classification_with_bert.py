@@ -14,7 +14,7 @@ In this lab we turn a pre-trained BERT model into a trainable Keras layer for a 
 # import tensorflow.compat.v1 as tf
 # tf.disable_v2_behavior()
 
-# import tensorflow as tf
+import tensorflow as tf
 import pandas as pd
 import tensorflow_hub as hub
 import os
@@ -187,7 +187,7 @@ def convert_examples_to_features(tokenizer, examples, max_seq_length=256):
     """Convert a set of `InputExample`s to a list of `InputFeatures`."""
 
     input_ids, input_masks, segment_ids, labels = [], [], [], []
-    for example in tqdm_notebook(examples, desc="Converting examples to features"):
+    for example in examples:#tqdm_notebook(examples, desc="Converting examples to features"):
         input_id, input_mask, segment_id, label = convert_single_example(
             tokenizer, example, max_seq_length
         )
@@ -212,13 +212,13 @@ def convert_text_to_examples(texts, labels):
     return InputExamples
 
 # Task 1
-# Instantiate tokenizer
+print("# Instantiate tokenizer")
 tokenizer = create_tokenizer_from_hub_module()
-# Convert data to InputExample format
+print("# Convert data to InputExample format")
 train_InputExamples = convert_text_to_examples(train_text, train_label)
 test_InputExamples = convert_text_to_examples(test_text, test_label)
 
-# Convert our train and test features to InputFeatures that BERT understands.
+print("# Convert our train and test features to InputFeatures that BERT understands.")
 (train_input_ids, train_input_masks, train_segment_ids, train_labels) = convert_examples_to_features(tokenizer, train_InputExamples )
 (test_input_ids, test_input_masks, test_segment_ids, test_labels) = convert_examples_to_features(tokenizer, test_InputExamples )
 
