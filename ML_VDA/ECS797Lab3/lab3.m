@@ -92,34 +92,3 @@ cum_sum_svr = sum(abs_error_svr < i > 0)/ size(ytest, 1); % use absolute error t
 
 fprintf('MAE SVR = %f\n', mae_svr);
 fprintf('Cumulative error of level 5 = %f\n', cum_sum_svr);
-
-%% In particular, you should include the CS plot for linear regression, 
-% and a table to compare the four different regression models using both
-% MAE and CS with an error level of 5.
-for i = 1:5
-    cum_sum(i) = sum(abs_error < i > 0)/size(ytest, 1);
-end
-
-for i = 1:5
-    cum_sum_plsr(i) = sum(abs_error_plsr < i > 0)/size(ytest, 1);
-end
-
-
-for i = 1:5
-    cum_sum_rtree(i) = sum(abs_error_rtree < i > 0)/size(ytest, 1);
-end
-
-for i = 1:5
-    cum_sum_svr(i) = sum(abs_error_svr < i > 0)/size(ytest, 1);
-end
-
-plot(1:5, cum_sum(1:5), 'r-*'); hold on;
-plot(1:5, cum_sum_plsr(1:5) ,'g-o'); hold on;
-plot(1:5, cum_sum_rtree(1:5), 'b-sq'); hold on;
-plot(1:5, cum_sum_svr(1:5),'k-^'); hold off;
-grid on
-title('Cumulative  plot')
-legend('Linear regression','Partial least square regression','Regression tree','SVR')
-legend('Location','northwest')
-ylabel('Cummulative score')
-xlabel('Error Level')
