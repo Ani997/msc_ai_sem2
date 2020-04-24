@@ -4,6 +4,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.optimizers import Adam
 import keras.backend as K
 # from keras.activations import softmax
+from tensorflow.keras.utils import plot_model
 import collections
 import numpy as np
 import time
@@ -66,11 +67,14 @@ class NmtModel(object):
     self.train_model = Model([source_words,target_words], decoder_outputs_train)
     self.train_model.compile(optimizer=adam,loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     self.train_model.summary()
+    plot_model(self.train_model, to_file='train_model.png')
+
 
     #Inference Models
 
     self.encoder_model = Model(source_words,[encoder_outputs,encoder_state_h,encoder_state_c])
     self.encoder_model.summary()
+    plot_model(self.encoder_model, to_file='encoder_model.png')
 
     decoder_state_input_h = Input(shape=(self.hidden_size,))
     decoder_state_input_c = Input(shape=(self.hidden_size,))
@@ -82,17 +86,12 @@ class NmtModel(object):
     Start
     """
     decoder_state = [decoder_state_input_h, decoder_state_input_c]
-    # decoder_lstm = LSTM(self.hidden_size,recurrent_dropout=self.hidden_dropout_rate,return_sequences=True,return_state=True)
     decoder_outputs_test,decoder_state_output_h,decoder_state_output_c = decoder_lstm(target_words_embeddings,initial_state=decoder_state)
     if self.use_attention:
         decoder_attention = AttentionLayer()
         decoder_outputs_test = decoder_attention([encoder_outputs_input,decoder_outputs_test])
     
-    # decoder_dense = Dense(self.vocab_target_size,activation='softmax')
-    # decoder_dense = Dense(activation='softmax')
     decoder_outputs_test = decoder_dense(decoder_outputs_test)    
-    
-    
     
     """
     End Task 2 
@@ -101,6 +100,7 @@ class NmtModel(object):
     self.decoder_model = Model([target_words,decoder_state_input_h,decoder_state_input_c,encoder_outputs_input],
                                [decoder_outputs_test,decoder_state_output_h,decoder_state_output_c])
     self.decoder_model.summary()
+    plot_model(self.decoder_model, to_file='decoder_model.png')
 
 
 
@@ -170,7 +170,8 @@ class NmtModel(object):
 
     candidates = self.get_target_sentences(np.concatenate(predictions,axis=1),vocab)
     references = self.get_target_sentences(target_words_labels,vocab,reference=True)
-
+    print("candidates: ",' '.join(candidates[0]))
+    print("references: ",' '.join(references[0][0]))
     score = corpus_bleu(references,candidates)
     print("Model BLEU score: %.2f" % (score*100.0))
 
@@ -192,29 +193,16 @@ class AttentionLayer(Layer):
     
     Start
     """
-
-    # decoder_outputs.shape is [batch_size, max_target_sent_len, hidden_size]
-    # encoder_outputs.shape is [batch_size, max_source_sent_len, hidden_size]
-    # is transpose decoder_outputs
-    # decoder_outputs = K.permute_dimensions(decoder_outputs,pattern=(0,2,1))
-    # ​decoder_outputs.shape is now ​[batch_size, hidden_size, max_target_sent_len]​
-
-    # luong_score = K.softmax(K.batch_dot(encoder_outputs,K.permute_dimensions(decoder_outputs,pattern=(0,2,1))), axis = 2)
     luong_score = tf.matmul(decoder_outputs, encoder_outputs, transpose_b=True)    
     alignment = tf.nn.softmax(luong_score, axis=2)
     context = tf.matmul(K.expand_dims(alignment,axis=2), K.expand_dims(encoder_outputs,axis=1))
-    # encoder_vector = Multiply()([K.expand_dims(encoder_outputs,axis=1),K.expand_dims(luong_score,axis=2)])
-    # encoder_vector = K.sum(context,axis=1)    
-    
-    
-    
-    
+    encoder_vector = K.squeeze(context,axis=2)    
     
     """
     End Task 3
     """
     # [batch,max_dec,2*emb]
-    new_decoder_outputs = K.concatenate([decoder_outputs, K.squeeze(context,axis=2)])
+    new_decoder_outputs = K.concatenate([decoder_outputs, encoder_vector])
 
     return new_decoder_outputs
 
@@ -281,12 +269,13 @@ def load_dataset(source_path,target_path, max_num_examples=30000):
 
 if __name__ == '__main__':
   max_example = 30000
-  use_attention = True
+  use_attention = False
   train_data, dev_data, test_data, source_dict, target_dict = load_dataset("data.30.vi","data.30.en",max_num_examples=max_example)
   print("read %d/%d/%d train/dev/test batches" % (len(train_data[0]),len(dev_data[0]), len(test_data[0])))
 
   model = NmtModel(source_dict,target_dict,use_attention)
   model.build()
+  # plot_model(model, to_file='model.png')
   model.train(train_data,dev_data,test_data,10)
 
 
