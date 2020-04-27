@@ -170,8 +170,8 @@ class NmtModel(object):
 
     candidates = self.get_target_sentences(np.concatenate(predictions,axis=1),vocab)
     references = self.get_target_sentences(target_words_labels,vocab,reference=True)
-    print("candidates: ",' '.join(candidates[0]))
-    print("references: ",' '.join(references[0][0]))
+    print("candidates: ",' '.join(candidates[10]))
+    print("references: ",' '.join(references[10][0]))
     score = corpus_bleu(references,candidates)
     print("Model BLEU score: %.2f" % (score*100.0))
 
@@ -269,7 +269,7 @@ def load_dataset(source_path,target_path, max_num_examples=30000):
 
 if __name__ == '__main__':
   max_example = 30000
-  use_attention = False
+  use_attention = True
   train_data, dev_data, test_data, source_dict, target_dict = load_dataset("data.30.vi","data.30.en",max_num_examples=max_example)
   print("read %d/%d/%d train/dev/test batches" % (len(train_data[0]),len(dev_data[0]), len(test_data[0])))
 
